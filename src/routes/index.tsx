@@ -504,10 +504,10 @@ function Index() {
                       .filter(Boolean);
                     const level =
                       h.keyakinan >= 80
-                        ? { t: "Tinggi", c: "emerald" }
+                        ? { t: "Tinggi", text: "text-emerald-700", bar: "bg-emerald-500" }
                         : h.keyakinan >= 50
-                          ? { t: "Sedang", c: "amber" }
-                          : { t: "Rendah", c: "slate" };
+                          ? { t: "Sedang", text: "text-amber-700", bar: "bg-amber-500" }
+                          : { t: "Rendah", text: "text-slate-700", bar: "bg-slate-500" };
                     return (
                       <li
                         key={h.kode}
@@ -532,15 +532,13 @@ function Index() {
                               <div className="text-[10px] uppercase tracking-wider text-slate-500">
                                 Keyakinan
                               </div>
-                              <div
-                                className={`text-sm font-bold text-${level.c}-700`}
-                              >
+                              <div className={`text-sm font-bold ${level.text}`}>
                                 {h.keyakinan}% · {level.t}
                               </div>
                             </div>
                             <div className="h-10 w-16 overflow-hidden rounded-md bg-slate-100">
                               <div
-                                className={`h-full bg-${level.c}-500 transition-all`}
+                                className={`h-full ${level.bar} transition-all`}
                                 style={{ width: `${h.keyakinan}%` }}
                               />
                             </div>
