@@ -13,26 +13,48 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-type Gejala = { kode: string; label: string };
+type Gejala = { kode: string; label: string; kategori: string };
 
 const GEJALA: Gejala[] = [
-  { kode: "g1", label: "Laptop tidak menyala sama sekali" },
-  { kode: "g2", label: "Lampu indikator power menyala tapi layar gelap" },
-  { kode: "g3", label: "Layar berkedip atau bergaris" },
-  { kode: "g4", label: "Laptop cepat panas (overheat)" },
-  { kode: "g5", label: "Kipas berisik atau berputar sangat kencang" },
-  { kode: "g6", label: "Laptop mati sendiri secara tiba-tiba" },
-  { kode: "g7", label: "Baterai cepat habis / tidak bisa mengisi" },
-  { kode: "g8", label: "Keyboard tidak berfungsi sebagian / seluruhnya" },
-  { kode: "g9", label: "Touchpad tidak responsif" },
-  { kode: "g10", label: "Tidak ada suara dari speaker" },
-  { kode: "g11", label: "Tidak bisa terhubung ke WiFi" },
-  { kode: "g12", label: "Laptop sangat lambat / sering hang" },
-  { kode: "g13", label: "Muncul blue screen (BSOD)" },
-  { kode: "g14", label: "Bunyi 'klik-klik' dari dalam laptop" },
-  { kode: "g15", label: "Port USB tidak mendeteksi perangkat" },
-  { kode: "g16", label: "Booting gagal / stuck di logo" },
+  { kode: "g1", label: "Laptop tidak menyala sama sekali", kategori: "Power & Daya" },
+  { kode: "g2", label: "Lampu indikator power menyala tapi layar gelap", kategori: "Power & Daya" },
+  { kode: "g7", label: "Baterai cepat habis / tidak bisa mengisi", kategori: "Power & Daya" },
+  { kode: "g6", label: "Laptop mati sendiri secara tiba-tiba", kategori: "Power & Daya" },
+  { kode: "g3", label: "Layar berkedip atau bergaris", kategori: "Layar & Grafis" },
+  { kode: "g13", label: "Muncul blue screen (BSOD)", kategori: "Layar & Grafis" },
+  { kode: "g4", label: "Laptop cepat panas (overheat)", kategori: "Suhu & Pendingin" },
+  { kode: "g5", label: "Kipas berisik atau berputar sangat kencang", kategori: "Suhu & Pendingin" },
+  { kode: "g12", label: "Laptop sangat lambat / sering hang", kategori: "Performa & Sistem" },
+  { kode: "g16", label: "Booting gagal / stuck di logo", kategori: "Performa & Sistem" },
+  { kode: "g14", label: "Bunyi 'klik-klik' dari dalam laptop", kategori: "Penyimpanan" },
+  { kode: "g8", label: "Keyboard tidak berfungsi sebagian / seluruhnya", kategori: "Periferal" },
+  { kode: "g9", label: "Touchpad tidak responsif", kategori: "Periferal" },
+  { kode: "g10", label: "Tidak ada suara dari speaker", kategori: "Periferal" },
+  { kode: "g11", label: "Tidak bisa terhubung ke WiFi", kategori: "Konektivitas" },
+  { kode: "g15", label: "Port USB tidak mendeteksi perangkat", kategori: "Konektivitas" },
 ];
+
+// Peta aturan -> gejala yang dibutuhkan (untuk perhitungan keyakinan & jejak inferensi)
+const RULE_REQS: Record<string, string[]> = {
+  motherboard_rusak: ["g1", "g2"],
+  adaptor_baterai: ["g1", "g7"],
+  lcd_rusak: ["g3"],
+  vga_rusak: ["g3", "g13"],
+  overheating: ["g4", "g5"],
+  overheat_shutdown: ["g4", "g6"],
+  baterai_drop: ["g7"],
+  keyboard_rusak: ["g8"],
+  touchpad_rusak: ["g9"],
+  audio_rusak: ["g10"],
+  wifi_rusak: ["g11"],
+  hardisk_rusak: ["g12", "g14"],
+  hardisk_klik: ["g14"],
+  ram_rusak: ["g12", "g13"],
+  os_corrupt: ["g13", "g16"],
+  boot_gagal: ["g16"],
+  usb_rusak: ["g15"],
+  performa_lambat: ["g12"],
+};
 
 // Basis pengetahuan dalam bahasa Prolog (Tau-Prolog).
 const PROLOG_KB = `
@@ -114,6 +136,7 @@ diagnosa(Kode, Nama, Solusi) :- kerusakan(Kode, Nama, Solusi).
 `;
 
 type Hasil = { kode: string; nama: string; solusi: string };
+type HasilLengkap = Hasil & { gejalaCocok: string[]; keyakinan: number };
 
 declare global {
   interface Window {
@@ -146,10 +169,11 @@ function loadTauProlog(): Promise<any> {
 
 function Index() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [hasil, setHasil] = useState<Hasil[] | null>(null);
+  const [hasil, setHasil] = useState<HasilLengkap[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [prologReady, setPrologReady] = useState(false);
+  const [showKB, setShowKB] = useState(false);
 
   useEffect(() => {
     loadTauProlog()
@@ -233,7 +257,17 @@ function Index() {
         });
 
       await fetchAll();
-      setHasil(results);
+      const lengkap: HasilLengkap[] = results
+        .map((r) => {
+          const req = RULE_REQS[r.kode] ?? [];
+          const cocok = req.filter((g) => selected.has(g));
+          const keyakinan = req.length
+            ? Math.round((cocok.length / req.length) * 100)
+            : 0;
+          return { ...r, gejalaCocok: cocok, keyakinan };
+        })
+        .sort((a, b) => b.gejalaCocok.length - a.gejalaCocok.length || b.keyakinan - a.keyakinan);
+      setHasil(lengkap);
     } catch (e: any) {
       setError(e.message ?? "Terjadi kesalahan.");
     } finally {
@@ -242,153 +276,407 @@ function Index() {
   };
 
   const totalDipilih = useMemo(() => selected.size, [selected]);
+  const grouped = useMemo(() => {
+    const map = new Map<string, Gejala[]>();
+    for (const g of GEJALA) {
+      if (!map.has(g.kategori)) map.set(g.kategori, []);
+      map.get(g.kategori)!.push(g);
+    }
+    return Array.from(map.entries());
+  }, []);
+  const labelOf = (kode: string) =>
+    GEJALA.find((g) => g.kode === kode)?.label ?? kode;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-blue-50">
-      <header className="border-b border-slate-200 bg-white/70 backdrop-blur">
-        <div className="mx-auto max-w-5xl px-6 py-6">
-          <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">
-            🖥️ Sistem Pakar Diagnosa Kerusakan Laptop
-          </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Berbasis bahasa pemrograman <strong>Prolog</strong> (Tau-Prolog) — pilih
-            gejala yang Anda alami, lalu sistem akan menganalisis kemungkinan
-            kerusakannya.
-          </p>
-          <div className="mt-2 text-xs text-slate-500">
-            Mesin inferensi:{" "}
+    <div className="min-h-screen bg-slate-100 text-slate-900">
+      {/* Top bar */}
+      <header className="sticky top-0 z-20 border-b border-slate-200 bg-white shadow-sm">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-indigo-600 to-blue-500 text-lg text-white shadow">
+              🩺
+            </div>
+            <div className="min-w-0">
+              <h1 className="truncate text-base font-bold sm:text-lg">
+                LaptopDx — Sistem Pakar Diagnosa Kerusakan Laptop
+              </h1>
+              <p className="truncate text-xs text-slate-500">
+                Forward chaining inference engine · Tau-Prolog
+              </p>
+            </div>
+          </div>
+          <div className="hidden items-center gap-2 sm:flex">
             <span
-              className={
-                prologReady ? "font-medium text-emerald-600" : "text-amber-600"
-              }
+              className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${
+                prologReady
+                  ? "bg-emerald-50 text-emerald-700 ring-1 ring-emerald-200"
+                  : "bg-amber-50 text-amber-700 ring-1 ring-amber-200"
+              }`}
             >
-              {prologReady ? "siap ✓" : "memuat..."}
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  prologReady ? "bg-emerald-500" : "bg-amber-500 animate-pulse"
+                }`}
+              />
+              {prologReady ? "Engine Siap" : "Memuat Engine..."}
             </span>
           </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-8">
-        <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-slate-900">
-              1. Pilih Gejala
-            </h2>
-            <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700">
-              {totalDipilih} dipilih
-            </span>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {GEJALA.map((g) => {
-              const checked = selected.has(g.kode);
-              return (
-                <label
-                  key={g.kode}
-                  className={`flex cursor-pointer items-start gap-3 rounded-lg border p-3 transition-all ${
-                    checked
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-slate-200 bg-white hover:border-slate-300"
-                  }`}
-                >
-                  <input
-                    type="checkbox"
-                    checked={checked}
-                    onChange={() => toggle(g.kode)}
-                    className="mt-0.5 h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm text-slate-800">
-                    <span className="font-mono text-xs text-slate-500">
-                      [{g.kode.toUpperCase()}]
-                    </span>{" "}
-                    {g.label}
-                  </span>
-                </label>
-              );
-            })}
-          </div>
+      {/* Hero / intro */}
+      <section className="border-b border-slate-200 bg-gradient-to-br from-indigo-700 via-blue-700 to-cyan-600 text-white">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
+          <span className="inline-block rounded-full bg-white/15 px-3 py-1 text-xs font-medium uppercase tracking-wider backdrop-blur">
+            Knowledge Based System
+          </span>
+          <h2 className="mt-3 text-2xl font-bold sm:text-3xl">
+            Diagnosa kerusakan laptop Anda dalam 3 langkah
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm text-white/80 sm:text-base">
+            Pilih gejala yang dialami, sistem akan menjalankan aturan Prolog,
+            lalu menampilkan kemungkinan kerusakan beserta solusi yang
+            disarankan oleh basis pengetahuan pakar.
+          </p>
 
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              onClick={diagnosa}
-              disabled={loading || !prologReady}
-              className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
-            >
-              {loading ? "Menganalisis..." : "🔍 Analisis Kerusakan"}
-            </button>
-            <button
-              onClick={reset}
-              className="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            >
-              Reset
-            </button>
+          {/* Stepper */}
+          <ol className="mt-6 grid gap-3 sm:grid-cols-3">
+            {[
+              { n: 1, t: "Input Gejala", d: "Centang gejala yang dialami" },
+              { n: 2, t: "Inferensi", d: "Mesin Prolog mencocokkan aturan" },
+              { n: 3, t: "Diagnosa & Solusi", d: "Lihat hasil dan rekomendasi" },
+            ].map((s) => (
+              <li
+                key={s.n}
+                className="flex items-center gap-3 rounded-lg bg-white/10 p-3 ring-1 ring-white/15 backdrop-blur"
+              >
+                <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-white text-sm font-bold text-indigo-700">
+                  {s.n}
+                </span>
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold">{s.t}</div>
+                  <div className="truncate text-xs text-white/75">{s.d}</div>
+                </div>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <main className="mx-auto grid max-w-6xl gap-6 px-4 py-8 sm:px-6 lg:grid-cols-3">
+        {/* Left: input panel */}
+        <section className="lg:col-span-2">
+          <div className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-3">
+              <div className="flex items-center gap-2">
+                <span className="grid h-6 w-6 place-items-center rounded-md bg-indigo-600 text-xs font-bold text-white">
+                  1
+                </span>
+                <h3 className="text-sm font-semibold text-slate-800">
+                  Konsultasi: Pilih Gejala
+                </h3>
+              </div>
+              <span className="rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-medium text-indigo-700 ring-1 ring-indigo-200">
+                {totalDipilih} gejala dipilih
+              </span>
+            </div>
+
+            <div className="divide-y divide-slate-100">
+              {grouped.map(([kategori, items]) => (
+                <div key={kategori} className="px-5 py-4">
+                  <h4 className="mb-3 text-xs font-bold uppercase tracking-wider text-slate-500">
+                    {kategori}
+                  </h4>
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {items.map((g) => {
+                      const checked = selected.has(g.kode);
+                      return (
+                        <label
+                          key={g.kode}
+                          className={`group flex cursor-pointer items-start gap-3 rounded-lg border p-3 text-sm transition ${
+                            checked
+                              ? "border-indigo-500 bg-indigo-50 ring-1 ring-indigo-300"
+                              : "border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50"
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => toggle(g.kode)}
+                            className="mt-0.5 h-4 w-4 shrink-0 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                          />
+                          <span className="min-w-0">
+                            <span className="font-mono text-[10px] font-semibold text-slate-400">
+                              {g.kode.toUpperCase()}
+                            </span>
+                            <span className="ml-1.5 text-slate-800">
+                              {g.label}
+                            </span>
+                          </span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 border-t border-slate-200 bg-slate-50 px-5 py-4">
+              <button
+                onClick={diagnosa}
+                disabled={loading || !prologReady}
+                className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+              >
+                {loading ? (
+                  <>
+                    <span className="h-3 w-3 animate-spin rounded-full border-2 border-white/40 border-t-white" />
+                    Menjalankan inferensi...
+                  </>
+                ) : (
+                  <>🔎 Jalankan Diagnosa</>
+                )}
+              </button>
+              <button
+                onClick={reset}
+                className="inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              >
+                ↺ Reset
+              </button>
+              <span className="ml-auto text-xs text-slate-500">
+                Tips: pilih beberapa gejala untuk hasil yang lebih akurat.
+              </span>
+            </div>
           </div>
 
           {error && (
             <div className="mt-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-              {error}
+              ⚠️ {error}
             </div>
           )}
-        </section>
 
-        <section className="mt-6 rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-900">
-            2. Hasil Analisis
-          </h2>
-          {!hasil && (
-            <p className="mt-2 text-sm text-slate-500">
-              Belum ada hasil. Pilih gejala lalu klik "Analisis Kerusakan".
-            </p>
-          )}
-          {hasil && hasil.length === 0 && (
-            <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
-              Tidak ditemukan kerusakan yang cocok dengan kombinasi gejala
-              tersebut pada basis pengetahuan. Coba tambah/ubah gejala.
+          {/* Hasil */}
+          <div className="mt-6 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+            <div className="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-3">
+              <div className="flex items-center gap-2">
+                <span className="grid h-6 w-6 place-items-center rounded-md bg-emerald-600 text-xs font-bold text-white">
+                  2
+                </span>
+                <h3 className="text-sm font-semibold text-slate-800">
+                  Hasil Analisis & Solusi
+                </h3>
+              </div>
+              {hasil && hasil.length > 0 && (
+                <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-emerald-200">
+                  {hasil.length} diagnosa ditemukan
+                </span>
+              )}
             </div>
-          )}
-          {hasil && hasil.length > 0 && (
-            <ul className="mt-4 space-y-4">
-              {hasil.map((h, i) => (
-                <li
-                  key={h.kode}
-                  className="rounded-lg border border-emerald-200 bg-emerald-50 p-4"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="rounded-full bg-emerald-600 px-2 py-0.5 text-xs font-bold text-white">
-                      #{i + 1}
-                    </span>
-                    <h3 className="text-base font-semibold text-emerald-900">
-                      {h.nama}
-                    </h3>
+
+            <div className="p-5">
+              {!hasil && !loading && (
+                <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-5 py-10 text-center">
+                  <div className="mx-auto mb-2 grid h-12 w-12 place-items-center rounded-full bg-white text-2xl shadow-sm">
+                    🧠
                   </div>
-                  <p className="mt-2 text-sm leading-relaxed text-slate-700">
-                    <strong className="text-slate-900">Solusi:</strong> {h.solusi}
+                  <p className="text-sm font-medium text-slate-700">
+                    Belum ada konsultasi
                   </p>
-                  <p className="mt-2 font-mono text-xs text-slate-500">
-                    aturan: {h.kode}
+                  <p className="mt-1 text-xs text-slate-500">
+                    Pilih gejala di atas lalu klik “Jalankan Diagnosa”.
                   </p>
-                </li>
-              ))}
-            </ul>
-          )}
+                </div>
+              )}
+
+              {hasil && hasil.length === 0 && (
+                <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                  Tidak ada aturan pada basis pengetahuan yang cocok dengan
+                  kombinasi gejala tersebut. Coba tambahkan atau ubah gejala
+                  yang dipilih.
+                </div>
+              )}
+
+              {hasil && hasil.length > 0 && (
+                <ul className="space-y-4">
+                  {hasil.map((h, i) => {
+                    const langkah = h.solusi
+                      .split(/(?<=[.!?])\s+/)
+                      .map((s) => s.trim())
+                      .filter(Boolean);
+                    const level =
+                      h.keyakinan >= 80
+                        ? { t: "Tinggi", text: "text-emerald-700", bar: "bg-emerald-500" }
+                        : h.keyakinan >= 50
+                          ? { t: "Sedang", text: "text-amber-700", bar: "bg-amber-500" }
+                          : { t: "Rendah", text: "text-slate-700", bar: "bg-slate-500" };
+                    return (
+                      <li
+                        key={h.kode}
+                        className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm"
+                      >
+                        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-4 py-3">
+                          <div className="flex items-center gap-3 min-w-0">
+                            <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-indigo-600 text-xs font-bold text-white">
+                              #{i + 1}
+                            </span>
+                            <div className="min-w-0">
+                              <h4 className="truncate text-sm font-bold text-slate-900 sm:text-base">
+                                {h.nama}
+                              </h4>
+                              <p className="font-mono text-[10px] text-slate-500">
+                                rule: {h.kode}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="text-right">
+                              <div className="text-[10px] uppercase tracking-wider text-slate-500">
+                                Keyakinan
+                              </div>
+                              <div className={`text-sm font-bold ${level.text}`}>
+                                {h.keyakinan}% · {level.t}
+                              </div>
+                            </div>
+                            <div className="h-10 w-16 overflow-hidden rounded-md bg-slate-100">
+                              <div
+                                className={`h-full ${level.bar} transition-all`}
+                                style={{ width: `${h.keyakinan}%` }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="grid gap-4 p-4 sm:grid-cols-5">
+                          <div className="sm:col-span-2">
+                            <h5 className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">
+                              Gejala yang cocok
+                            </h5>
+                            <ul className="space-y-1.5">
+                              {h.gejalaCocok.map((g) => (
+                                <li
+                                  key={g}
+                                  className="flex items-start gap-2 text-xs text-slate-700"
+                                >
+                                  <span className="mt-0.5 text-emerald-600">✓</span>
+                                  <span>
+                                    <span className="font-mono text-[10px] text-slate-400">
+                                      {g.toUpperCase()}
+                                    </span>{" "}
+                                    {labelOf(g)}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          <div className="sm:col-span-3">
+                            <h5 className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">
+                              Rekomendasi Solusi
+                            </h5>
+                            <ol className="space-y-2">
+                              {langkah.map((l, idx) => (
+                                <li
+                                  key={idx}
+                                  className="flex items-start gap-2 text-sm text-slate-700"
+                                >
+                                  <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-indigo-100 text-[10px] font-bold text-indigo-700">
+                                    {idx + 1}
+                                  </span>
+                                  <span>{l}</span>
+                                </li>
+                              ))}
+                            </ol>
+                          </div>
+                        </div>
+                      </li>
+                    );
+                  })}
+
+                  <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-xs text-blue-800">
+                    ℹ️ <strong>Disclaimer:</strong> hasil diagnosa bersifat
+                    indikatif berdasarkan basis pengetahuan. Untuk perbaikan
+                    perangkat keras, konsultasikan dengan teknisi resmi.
+                  </div>
+                </ul>
+              )}
+            </div>
+          </div>
         </section>
 
-        <section className="mt-6 rounded-xl border border-slate-200 bg-slate-900 p-6 text-slate-100 shadow-sm">
-          <h2 className="text-lg font-semibold">
-            📜 Cuplikan Basis Pengetahuan (Prolog)
-          </h2>
-          <p className="mt-1 text-xs text-slate-400">
-            Aturan diagnosa ditulis dalam Prolog dan dieksekusi langsung di browser
-            menggunakan Tau-Prolog.
-          </p>
-          <pre className="mt-3 max-h-72 overflow-auto rounded-lg bg-black/40 p-4 font-mono text-xs leading-relaxed text-emerald-200">
+        {/* Right: sidebar */}
+        <aside className="space-y-6">
+          <div className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <h3 className="text-sm font-bold text-slate-800">
+              Tentang Sistem Pakar
+            </h3>
+            <p className="mt-2 text-xs leading-relaxed text-slate-600">
+              Sistem pakar (<em>expert system</em>) ini meniru cara berpikir
+              seorang teknisi laptop. Menggunakan{" "}
+              <strong>forward chaining</strong>: fakta (gejala) dicocokkan
+              dengan aturan untuk menghasilkan kesimpulan (kerusakan).
+            </p>
+            <dl className="mt-4 space-y-2 text-xs">
+              <div className="flex justify-between border-b border-slate-100 py-1.5">
+                <dt className="text-slate-500">Total Gejala</dt>
+                <dd className="font-semibold text-slate-800">
+                  {GEJALA.length}
+                </dd>
+              </div>
+              <div className="flex justify-between border-b border-slate-100 py-1.5">
+                <dt className="text-slate-500">Aturan Pakar</dt>
+                <dd className="font-semibold text-slate-800">
+                  {Object.keys(RULE_REQS).length}
+                </dd>
+              </div>
+              <div className="flex justify-between border-b border-slate-100 py-1.5">
+                <dt className="text-slate-500">Engine</dt>
+                <dd className="font-semibold text-slate-800">Tau-Prolog</dd>
+              </div>
+              <div className="flex justify-between py-1.5">
+                <dt className="text-slate-500">Metode</dt>
+                <dd className="font-semibold text-slate-800">
+                  Forward Chaining
+                </dd>
+              </div>
+            </dl>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-white shadow-sm">
+            <button
+              onClick={() => setShowKB((v) => !v)}
+              className="flex w-full items-center justify-between px-5 py-3 text-left"
+            >
+              <span className="text-sm font-bold text-slate-800">
+                📜 Basis Pengetahuan (Prolog)
+              </span>
+              <span className="text-xs text-slate-500">
+                {showKB ? "Tutup" : "Lihat"}
+              </span>
+            </button>
+            {showKB && (
+              <pre className="max-h-80 overflow-auto border-t border-slate-200 bg-slate-900 p-4 font-mono text-[11px] leading-relaxed text-emerald-200">
 {PROLOG_KB.trim()}
-          </pre>
-        </section>
+              </pre>
+            )}
+          </div>
 
-        <footer className="mt-8 pb-6 text-center text-xs text-slate-500">
-          Sistem Pakar Kerusakan Laptop • Dibangun dengan React + Tau-Prolog
-        </footer>
+          <div className="rounded-xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-white p-5 shadow-sm">
+            <h3 className="text-sm font-bold text-indigo-900">
+              💡 Cara Penggunaan
+            </h3>
+            <ol className="mt-2 space-y-1.5 text-xs text-slate-700">
+              <li>1. Pilih semua gejala yang Anda alami.</li>
+              <li>2. Klik tombol “Jalankan Diagnosa”.</li>
+              <li>3. Periksa hasil & ikuti langkah solusi.</li>
+            </ol>
+          </div>
+        </aside>
       </main>
+
+      <footer className="border-t border-slate-200 bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-4 text-center text-xs text-slate-500 sm:px-6">
+          © {new Date().getFullYear()} LaptopDx · Sistem Pakar berbasis Prolog
+          · Dibangun dengan React + Tau-Prolog
+        </div>
+      </footer>
     </div>
   );
 }
