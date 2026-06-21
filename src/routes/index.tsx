@@ -167,12 +167,19 @@ declare global {
 async function loadTauProlog(): Promise<any> {
   if (typeof window === "undefined") throw new Error("SSR");
   if (window.pl) return window.pl;
-  // Impor dinamis agar bundle hanya dimuat di sisi klien.
-  const mod: any = await import("tau-prolog");
-  const pl = mod.default ?? mod;
-  // Ekspos ke window agar lifecycle lama tetap berfungsi.
-  window.pl = pl;
-  return pl;
+  // Tau-Prolog menggunakan banyak variabel global implisit (tau_file_system,
+  // tau_user_input, dll.) yang gagal di mode strict (ESM bundler). Solusinya:
+  // muat source sebagai teks lalu evaluasi di mode sloppy via `new Function`.
+  const [coreSrc, jsSrc] = await Promise.all([
+    import("tau-prolog/modules/core.js?raw").then((m) => m.default),
+    import("tau-prolog/modules/js.js?raw").then((m) => m.default).catch(() => ""),
+  ]);
+  // Function body berjalan di sloppy mode sehingga assignment implicit
+  // langsung membuat properti pada objek global (window).
+  new Function(coreSrc)();
+  if (jsSrc) new Function("pl", jsSrc)(window.pl);
+  if (!window.pl) throw new Error("Gagal memuat Tau-Prolog");
+  return window.pl;
 }
 
 function Index() {
