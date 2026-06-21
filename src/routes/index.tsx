@@ -16,121 +16,141 @@ export const Route = createFileRoute("/")({
 type Gejala = { kode: string; label: string; kategori: string };
 
 const GEJALA: Gejala[] = [
-  { kode: "g1", label: "Laptop tidak menyala sama sekali", kategori: "Power & Daya" },
-  { kode: "g2", label: "Lampu indikator power menyala tapi layar gelap", kategori: "Power & Daya" },
-  { kode: "g7", label: "Baterai cepat habis / tidak bisa mengisi", kategori: "Power & Daya" },
-  { kode: "g6", label: "Laptop mati sendiri secara tiba-tiba", kategori: "Power & Daya" },
-  { kode: "g3", label: "Layar berkedip atau bergaris", kategori: "Layar & Grafis" },
-  { kode: "g13", label: "Muncul blue screen (BSOD)", kategori: "Layar & Grafis" },
-  { kode: "g4", label: "Laptop cepat panas (overheat)", kategori: "Suhu & Pendingin" },
-  { kode: "g5", label: "Kipas berisik atau berputar sangat kencang", kategori: "Suhu & Pendingin" },
-  { kode: "g12", label: "Laptop sangat lambat / sering hang", kategori: "Performa & Sistem" },
-  { kode: "g16", label: "Booting gagal / stuck di logo", kategori: "Performa & Sistem" },
-  { kode: "g14", label: "Bunyi 'klik-klik' dari dalam laptop", kategori: "Penyimpanan" },
-  { kode: "g8", label: "Keyboard tidak berfungsi sebagian / seluruhnya", kategori: "Periferal" },
-  { kode: "g9", label: "Touchpad tidak responsif", kategori: "Periferal" },
-  { kode: "g10", label: "Tidak ada suara dari speaker", kategori: "Periferal" },
-  { kode: "g11", label: "Tidak bisa terhubung ke WiFi", kategori: "Konektivitas" },
-  { kode: "g15", label: "Port USB tidak mendeteksi perangkat", kategori: "Konektivitas" },
+  // Power & Daya
+  { kode: "g1", label: "Mengeluarkan bau hangus", kategori: "Power & Daya" },
+  { kode: "g2", label: "Laptop mati total & tombol power tidak berfungsi", kategori: "Power & Daya" },
+  { kode: "g3", label: "Proses shutdown lama disertai bunyi bip", kategori: "Power & Daya" },
+  // Boot & Tampilan Awal
+  { kode: "g4", label: "Saat dihidupkan tidak ada tampilan di layar", kategori: "Boot & Tampilan Awal" },
+  { kode: "g5", label: "Mengeluarkan bunyi bip berulang-ulang", kategori: "Boot & Tampilan Awal" },
+  { kode: "g6", label: "Proses booting berhenti setelah POST", kategori: "Boot & Tampilan Awal" },
+  { kode: "g7", label: "Sering mengalami kegagalan proses booting", kategori: "Boot & Tampilan Awal" },
+  { kode: "g8", label: "Sistem hanya dapat menyala sementara waktu", kategori: "Boot & Tampilan Awal" },
+  // Layar & Grafis
+  { kode: "g9", label: "Monitor mati / kosong / tidak ada gambar", kategori: "Layar & Grafis" },
+  { kode: "g10", label: "Monitor berkedip (flickering)", kategori: "Layar & Grafis" },
+  { kode: "g11", label: "Tampilan tidak sesuai dengan aslinya", kategori: "Layar & Grafis" },
+  { kode: "g12", label: "Layar bergetar", kategori: "Layar & Grafis" },
+  { kode: "g13", label: "Terdapat bercak kotor (gomy) pada layar", kategori: "Layar & Grafis" },
+  { kode: "g14", label: "LCD bergaris", kategori: "Layar & Grafis" },
+  { kode: "g15", label: "LCD menampilkan artefak visual", kategori: "Layar & Grafis" },
+  { kode: "g16", label: "Layar tidak muncul & tidak bisa akses BIOS", kategori: "Layar & Grafis" },
+  { kode: "g17", label: "Muncul layar biru (Blue Screen / BSOD)", kategori: "Layar & Grafis" },
+  // Performa & Sistem
+  { kode: "g18", label: "Sistem operasi tidak berfungsi", kategori: "Performa & Sistem Operasi" },
+  { kode: "g19", label: "Loading lama dan sering mengalami hang", kategori: "Performa & Sistem Operasi" },
+  { kode: "g20", label: "Program tidak didukung & sering restart", kategori: "Performa & Sistem Operasi" },
+  { kode: "g21", label: "Booting masuk ke Windows berjalan lambat", kategori: "Performa & Sistem Operasi" },
+  { kode: "g22", label: "Windows Explorer dalam keadaan tidak aktif", kategori: "Performa & Sistem Operasi" },
+  { kode: "g23", label: "Start menu tidak berfungsi", kategori: "Performa & Sistem Operasi" },
+  { kode: "g24", label: "Prosedur shutdown tidak berjalan", kategori: "Performa & Sistem Operasi" },
+  { kode: "g25", label: "Shutdown terhenti sebelum komputer benar-benar mati", kategori: "Performa & Sistem Operasi" },
+  { kode: "g26", label: "Layar selalu dalam keadaan diam (freeze)", kategori: "Performa & Sistem Operasi" },
+  { kode: "g27", label: "Laptop berjalan lambat / akses program lambat", kategori: "Performa & Sistem Operasi" },
+  { kode: "g28", label: "Terjadi kegagalan saat membuka program", kategori: "Performa & Sistem Operasi" },
+  { kode: "g29", label: "Tidak bisa dimatikan (shutdown)", kategori: "Performa & Sistem Operasi" },
+  { kode: "g30", label: "Sistem selalu meminta pengaturan (setup) CMOS", kategori: "Performa & Sistem Operasi" },
+  { kode: "g31", label: "Laptop tidak berfungsi sama sekali", kategori: "Performa & Sistem Operasi" },
+  // Suhu & Pendinginan
+  { kode: "g32", label: "Laptop cepat / mudah menjadi panas (overheat)", kategori: "Suhu & Pendinginan" },
+  { kode: "g33", label: "Suhu kipas tidak dalam kondisi baik", kategori: "Suhu & Pendinginan" },
+  { kode: "g34", label: "Kipas mengeluarkan suara berisik", kategori: "Suhu & Pendinginan" },
+  { kode: "g35", label: "Terdapat hembusan angin pada bagian pembuangan", kategori: "Suhu & Pendinginan" },
+  { kode: "g36", label: "Kipas tidak berputar / tidak bersirkulasi", kategori: "Suhu & Pendinginan" },
+  { kode: "g37", label: "Laptop sering mati secara mendadak", kategori: "Suhu & Pendinginan" },
+  // Penyimpanan
+  { kode: "g38", label: "Sistem tidak terdeteksi (No System Detect)", kategori: "Penyimpanan" },
+  { kode: "g39", label: "Tidak bisa melakukan proses fast boot", kategori: "Penyimpanan" },
+  { kode: "g40", label: "Muncul kode aneh / kode error pada layar", kategori: "Penyimpanan" },
+  { kode: "g41", label: "Harddisk overheat / mudah panas", kategori: "Penyimpanan" },
+  { kode: "g42", label: "Data sering tidak terbaca", kategori: "Penyimpanan" },
+  { kode: "g43", label: "Tidak dapat membaca, menulis, menghapus, mengedit data", kategori: "Penyimpanan" },
+  // Periferal
+  { kode: "g44", label: "Keyboard tidak berfungsi", kategori: "Periferal & USB" },
+  { kode: "g45", label: "Driver (USB) tidak terinstal", kategori: "Periferal & USB" },
+  { kode: "g46", label: "Port USB dalam keadaan longgar", kategori: "Periferal & USB" },
+  { kode: "g47", label: "Port USB mengalami kerusakan fisik", kategori: "Periferal & USB" },
+  { kode: "g48", label: "Jalur (stripe) USB pada PCB terputus", kategori: "Periferal & USB" },
+  { kode: "g49", label: "Fungsi USB Selective dalam status disable", kategori: "Periferal & USB" },
+  // Pengisian Daya
+  { kode: "g50", label: "Masalah pada colokan charger", kategori: "Pengisian Daya" },
+  { kode: "g51", label: "Masalah pada komponen charger laptop", kategori: "Pengisian Daya" },
+  { kode: "g52", label: "Masalah pada adaptor charger", kategori: "Pengisian Daya" },
+  { kode: "g53", label: "Masalah pada sambungan kabel charger", kategori: "Pengisian Daya" },
+  { kode: "g54", label: "Masalah pada ujung konektor charger", kategori: "Pengisian Daya" },
+  { kode: "g55", label: "Masalah pada port charger", kategori: "Pengisian Daya" },
+  { kode: "g56", label: "Muncul tanda silang pada indikator baterai", kategori: "Pengisian Daya" },
 ];
 
-// Peta aturan -> gejala yang dibutuhkan (untuk perhitungan keyakinan & jejak inferensi)
+// Peta aturan -> gejala terkait (untuk perhitungan tingkat keyakinan & jejak inferensi)
 const RULE_REQS: Record<string, string[]> = {
-  motherboard_rusak: ["g1", "g2"],
-  adaptor_baterai: ["g1", "g7"],
-  lcd_rusak: ["g3"],
-  vga_rusak: ["g3", "g13"],
-  overheating: ["g4", "g5"],
-  overheat_shutdown: ["g4", "g6"],
-  baterai_drop: ["g7"],
-  keyboard_rusak: ["g8"],
-  touchpad_rusak: ["g9"],
-  audio_rusak: ["g10"],
-  wifi_rusak: ["g11"],
-  hardisk_rusak: ["g12", "g14"],
-  hardisk_klik: ["g14"],
-  ram_rusak: ["g12", "g13"],
-  os_corrupt: ["g13", "g16"],
-  boot_gagal: ["g16"],
-  usb_rusak: ["g15"],
-  performa_lambat: ["g12"],
+  power_supply: ["g1", "g2", "g3"],
+  memori: ["g4", "g5", "g17", "g18"],
+  monitor: ["g9", "g10", "g11", "g12", "g13", "g14", "g15"],
+  vga: ["g16", "g19", "g20"],
+  harddisk: ["g17", "g27", "g38", "g39", "g40", "g41", "g42"],
+  optical_drive: ["g27", "g43"],
+  motherboard: ["g27", "g29", "g30", "g32"],
+  kipas: ["g19", "g32", "g33", "g34", "g35", "g36", "g37", "g44"],
+  prosesor: ["g7", "g8", "g17", "g19", "g28", "g31", "g32", "g37"],
+  operating_system: ["g6", "g21", "g22", "g23", "g24", "g25", "g26"],
+  usb: ["g45", "g46", "g47", "g48", "g49"],
+  pengisian_daya: ["g32", "g50", "g51", "g52", "g53", "g54", "g55", "g56"],
 };
 
-// Basis pengetahuan dalam bahasa Prolog (Tau-Prolog).
+// Basis pengetahuan dalam Prolog (Tau-Prolog). Aturan menggunakan disjungsi (;)
+// sehingga diagnosa muncul bila MINIMAL satu gejala terkait terpenuhi. Tingkat
+// keyakinan dihitung di sisi aplikasi berdasarkan jumlah gejala yang cocok.
 const PROLOG_KB = `
 :- dynamic(gejala/1).
 
-kerusakan(motherboard_rusak, 'Motherboard / Mainboard bermasalah',
-  'Bawa ke teknisi untuk pengecekan jalur power dan chipset. Kemungkinan perlu reball / penggantian komponen pada motherboard.') :-
-  gejala(g1), gejala(g2).
+kerusakan(power_supply, 'Kerusakan Power Supply',
+  'Periksa adaptor, kabel power, dan jalur power pada motherboard. Hentikan pemakaian jika ada bau hangus; bawa ke teknisi untuk pengecekan dan penggantian power supply / komponen yang terbakar.') :-
+  ( gejala(g1) ; gejala(g2) ; gejala(g3) ).
 
-kerusakan(adaptor_baterai, 'Adaptor / Baterai bermasalah',
-  'Coba lepas baterai dan colok langsung ke adaptor. Jika hidup, ganti baterai. Jika tidak, ganti adaptor charger.') :-
-  gejala(g1), gejala(g7).
+kerusakan(memori, 'Kerusakan Memori (RAM)',
+  'Lepas modul RAM, bersihkan pin kuningan dengan penghapus karet, pasang kembali dengan benar. Jika bunyi bip berulang atau BSOD tetap muncul, ganti modul RAM dengan tipe yang sesuai.') :-
+  ( gejala(g4) ; gejala(g5) ; gejala(g17) ; gejala(g18) ).
 
-kerusakan(lcd_rusak, 'LCD / Layar laptop rusak',
-  'Tes dengan monitor eksternal melalui HDMI. Jika monitor eksternal normal, kemungkinan LCD atau kabel fleksibel layar harus diganti.') :-
-  gejala(g3).
+kerusakan(monitor, 'Kerusakan Monitor / Layar (LCD)',
+  'Tes dengan monitor eksternal melalui HDMI/VGA. Bila monitor eksternal normal, kerusakan ada di LCD atau kabel fleksibel; ganti panel LCD atau kabel fleksibel layar.') :-
+  ( gejala(g9) ; gejala(g10) ; gejala(g11) ; gejala(g12) ; gejala(g13) ; gejala(g14) ; gejala(g15) ).
 
-kerusakan(vga_rusak, 'VGA / Chipset grafis bermasalah',
-  'Jika monitor eksternal juga bergaris/berkedip, kemungkinan VGA rusak. Perlu reball atau penggantian chip VGA oleh teknisi.') :-
-  gejala(g3), gejala(g13).
+kerusakan(vga, 'Kerusakan VGA / Chipset Grafis',
+  'Update driver VGA terbaru. Jika tetap hang/restart atau layar tidak muncul saat BIOS, kemungkinan chip VGA bermasalah dan perlu di-reball atau diganti oleh teknisi.') :-
+  ( gejala(g16) ; gejala(g19) ; gejala(g20) ).
 
-kerusakan(overheating, 'Sistem pendingin bermasalah (Overheat)',
-  'Bersihkan kipas dan heatsink dari debu, ganti thermal paste prosesor. Jika kipas berisik, kemungkinan bearing kipas aus dan perlu diganti.') :-
-  gejala(g4), gejala(g5).
+kerusakan(harddisk, 'Kerusakan Hard Drive / Harddisk',
+  'Backup data segera. Jalankan CHKDSK / pemeriksaan SMART. Jika bad sector banyak, harddisk overheat, atau data tidak terbaca, ganti HDD dengan SSD baru.') :-
+  ( gejala(g17) ; gejala(g27) ; gejala(g38) ; gejala(g39) ; gejala(g40) ; gejala(g41) ; gejala(g42) ).
 
-kerusakan(overheat_shutdown, 'Overheat menyebabkan auto shutdown',
-  'Laptop melakukan proteksi otomatis karena suhu CPU/GPU terlalu tinggi. Bersihkan pendingin dan ganti thermal paste segera.') :-
-  gejala(g4), gejala(g6).
+kerusakan(optical_drive, 'Kerusakan Optical Drive (DVD/CD)',
+  'Bersihkan lensa optik dengan cleaner disc. Jika tetap tidak bisa membaca/menulis, ganti modul optical drive atau gunakan optical drive eksternal USB.') :-
+  ( gejala(g27) ; gejala(g43) ).
 
-kerusakan(baterai_drop, 'Baterai drop / rusak',
-  'Kapasitas baterai sudah menurun. Ganti baterai dengan yang baru dan original.') :-
-  gejala(g7).
+kerusakan(motherboard, 'Kerusakan Motherboard',
+  'Reset BIOS / ganti baterai CMOS. Jika sistem tetap meminta setup CMOS, lambat, atau tidak bisa shutdown, bawa ke teknisi untuk pengecekan jalur dan chipset motherboard.') :-
+  ( gejala(g27) ; gejala(g29) ; gejala(g30) ; gejala(g32) ).
 
-kerusakan(keyboard_rusak, 'Keyboard rusak',
-  'Coba gunakan keyboard eksternal USB untuk memastikan. Jika eksternal normal, ganti modul keyboard internal.') :-
-  gejala(g8).
+kerusakan(kipas, 'Kerusakan Kipas (Fan)',
+  'Bersihkan kipas & heatsink dari debu, ganti thermal paste prosesor. Jika kipas berisik atau tidak berputar, ganti modul kipas pendingin dengan yang baru.') :-
+  ( gejala(g19) ; gejala(g32) ; gejala(g33) ; gejala(g34) ; gejala(g35) ; gejala(g36) ; gejala(g37) ; gejala(g44) ).
 
-kerusakan(touchpad_rusak, 'Touchpad rusak atau driver bermasalah',
-  'Cek pengaturan touchpad dan update driver. Jika tetap, kabel fleksibel touchpad mungkin lepas atau modul rusak.') :-
-  gejala(g9).
+kerusakan(prosesor, 'Kerusakan Prosesor (Processor)',
+  'Cek suhu CPU dengan aplikasi monitoring. Ganti thermal paste. Jika sering mati mendadak, gagal booting, atau hanya menyala sebentar, prosesor kemungkinan rusak dan perlu diganti.') :-
+  ( gejala(g7) ; gejala(g8) ; gejala(g17) ; gejala(g19) ; gejala(g28) ; gejala(g31) ; gejala(g32) ; gejala(g37) ).
 
-kerusakan(audio_rusak, 'Speaker / Driver audio bermasalah',
-  'Update / install ulang driver audio. Jika tetap tidak bunyi, speaker internal kemungkinan putus dan harus diganti.') :-
-  gejala(g10).
+kerusakan(operating_system, 'Kerusakan Sistem Operasi (Operating System)',
+  'Coba Safe Mode lalu jalankan Startup Repair / SFC /scannow. Jika Explorer/Start menu tetap rusak atau shutdown bermasalah, lakukan install ulang sistem operasi.') :-
+  ( gejala(g6) ; gejala(g21) ; gejala(g22) ; gejala(g23) ; gejala(g24) ; gejala(g25) ; gejala(g26) ).
 
-kerusakan(wifi_rusak, 'Modul WiFi bermasalah',
-  'Restart, lupakan jaringan lalu sambung ulang. Jika gagal, install ulang driver WiFi atau ganti modul WiFi card.') :-
-  gejala(g11).
+kerusakan(usb, 'Kerusakan USB',
+  'Install ulang driver USB pada Device Manager dan aktifkan kembali USB Selective Suspend. Jika port longgar atau jalur PCB putus, perlu penyolderan ulang atau penggantian port USB.') :-
+  ( gejala(g45) ; gejala(g46) ; gejala(g47) ; gejala(g48) ; gejala(g49) ).
 
-kerusakan(hardisk_rusak, 'Hardisk / HDD rusak (Bad Sector)',
-  'Bunyi klik dan lambat menandakan HDD rusak. Backup data segera dan ganti HDD ke SSD untuk performa lebih baik.') :-
-  gejala(g12), gejala(g14).
-
-kerusakan(hardisk_klik, 'Hardisk rusak fisik',
-  'Suara klik dari dalam laptop adalah ciri khas head HDD rusak. Segera ganti HDD sebelum data hilang total.') :-
-  gejala(g14).
-
-kerusakan(ram_rusak, 'RAM bermasalah',
-  'Lepas dan bersihkan kuningan RAM dengan penghapus karet. Jika BSOD tetap muncul, ganti modul RAM.') :-
-  gejala(g12), gejala(g13).
-
-kerusakan(os_corrupt, 'Sistem Operasi corrupt',
-  'Coba safe mode atau startup repair. Jika gagal, install ulang sistem operasi (Windows / Linux).') :-
-  gejala(g13), gejala(g16).
-
-kerusakan(boot_gagal, 'Bootloader / Storage bermasalah',
-  'Cek urutan boot di BIOS. Kemungkinan bootloader rusak atau storage tidak terdeteksi, perlu repair boot atau ganti storage.') :-
-  gejala(g16).
-
-kerusakan(usb_rusak, 'Port USB rusak',
-  'Coba di port USB lain. Jika semua port mati, kemungkinan controller USB pada motherboard rusak.') :-
-  gejala(g15).
-
-kerusakan(performa_lambat, 'Performa lambat (RAM/Storage penuh)',
-  'Tutup aplikasi yang tidak perlu, scan virus, upgrade RAM, atau ganti HDD ke SSD.') :-
-  gejala(g12).
+kerusakan(pengisian_daya, 'Kerusakan Pengisian Daya (Charging)',
+  'Periksa adaptor, kabel, dan port charger secara berurutan. Ganti adaptor / kabel / konektor yang bermasalah. Jika muncul tanda silang pada indikator baterai, ganti baterai atau perbaiki port charger.') :-
+  ( gejala(g32) ; gejala(g50) ; gejala(g51) ; gejala(g52) ; gejala(g53) ; gejala(g54) ; gejala(g55) ; gejala(g56) ).
 
 diagnosa(Kode, Nama, Solusi) :- kerusakan(Kode, Nama, Solusi).
 `;
