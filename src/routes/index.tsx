@@ -164,27 +164,15 @@ declare global {
   }
 }
 
-function loadTauProlog(): Promise<any> {
-  return new Promise((resolve, reject) => {
-    if (typeof window === "undefined") return reject(new Error("SSR"));
-    if (window.pl) return resolve(window.pl);
-    const urls = [
-      "https://cdn.jsdelivr.net/npm/tau-prolog@0.3.4/modules/core.js",
-      "https://cdn.jsdelivr.net/npm/tau-prolog@0.3.4/modules/lists.js",
-    ];
-    let loaded = 0;
-    urls.forEach((src) => {
-      const s = document.createElement("script");
-      s.src = src;
-      s.async = false;
-      s.onload = () => {
-        loaded++;
-        if (loaded === urls.length) resolve(window.pl);
-      };
-      s.onerror = () => reject(new Error("Gagal memuat Tau Prolog"));
-      document.head.appendChild(s);
-    });
-  });
+async function loadTauProlog(): Promise<any> {
+  if (typeof window === "undefined") throw new Error("SSR");
+  if (window.pl) return window.pl;
+  // Impor dinamis agar bundle hanya dimuat di sisi klien.
+  const mod: any = await import("tau-prolog");
+  const pl = mod.default ?? mod;
+  // Ekspos ke window agar lifecycle lama tetap berfungsi.
+  window.pl = pl;
+  return pl;
 }
 
 function Index() {
