@@ -353,8 +353,7 @@ function Index() {
           </h2>
           <p className="mt-2 max-w-2xl text-sm text-white/80 sm:text-base">
             Pilih gejala yang dialami, sistem akan menjalankan aturan Prolog,
-            lalu menampilkan kemungkinan kerusakan beserta solusi yang
-            disarankan oleh basis pengetahuan pakar.
+            lalu menampilkan kemungkinan kerusakan oleh basis pengetahuan pakar.
           </p>
 
           {/* Stepper */}
@@ -362,7 +361,7 @@ function Index() {
             {[
               { n: 1, t: "Input Gejala", d: "Centang gejala yang dialami" },
               { n: 2, t: "Inferensi", d: "Mesin Prolog mencocokkan aturan" },
-              { n: 3, t: "Diagnosa & Solusi", d: "Lihat hasil dan rekomendasi" },
+              { n: 3, t: "Diagnosa", d: "Lihat hasil\u00a0" },
             ].map((s) => (
               <li
                 key={s.n}
@@ -661,7 +660,7 @@ function Index() {
             <ol className="mt-2 space-y-1.5 text-xs text-slate-700">
               <li>1. Pilih semua gejala yang Anda alami.</li>
               <li>2. Klik tombol “Jalankan Diagnosa”.</li>
-              <li>3. Periksa hasil & ikuti langkah solusi.</li>
+              <li>3. Periksa hasil\u00a0</li>
             </ol>
           </div>
         </aside>
