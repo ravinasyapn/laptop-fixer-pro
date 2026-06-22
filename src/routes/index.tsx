@@ -308,8 +308,11 @@ function Index() {
       <header className="sticky top-0 z-20 border-b border-slate-200 bg-white shadow-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 sm:px-6">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-indigo-600 to-blue-500 text-lg text-white shadow">
-              🩺
+            <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-gradient-to-br from-indigo-600 to-blue-500 text-white shadow">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5">
+                <rect x="3" y="5" width="18" height="11" rx="2" ry="2" />
+                <path d="M2 19h20" />
+              </svg>
             </div>
             <div className="min-w-0">
               <h1 className="truncate text-base font-bold sm:text-lg">
@@ -477,7 +480,7 @@ function Index() {
                   2
                 </span>
                 <h3 className="text-sm font-semibold text-slate-800">
-                  Hasil Analisis & Solusi
+                  Hasil Analisis
                 </h3>
               </div>
               {hasil && hasil.length > 0 && (
@@ -513,10 +516,6 @@ function Index() {
               {hasil && hasil.length > 0 && (
                 <ul className="space-y-4">
                   {hasil.map((h, i) => {
-                    const langkah = h.solusi
-                      .split(/(?<=[.!?])\s+/)
-                      .map((s) => s.trim())
-                      .filter(Boolean);
                     const level =
                       h.keyakinan >= 80
                         ? { t: "Tinggi", text: "text-emerald-700", bar: "bg-emerald-500" }
@@ -560,8 +559,8 @@ function Index() {
                           </div>
                         </div>
 
-                        <div className="grid gap-4 p-4 sm:grid-cols-5">
-                          <div className="sm:col-span-2">
+                        <div className="p-4">
+                          <div>
                             <h5 className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">
                               Gejala yang cocok
                             </h5>
@@ -581,24 +580,6 @@ function Index() {
                                 </li>
                               ))}
                             </ul>
-                          </div>
-                          <div className="sm:col-span-3">
-                            <h5 className="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">
-                              Rekomendasi Solusi
-                            </h5>
-                            <ol className="space-y-2">
-                              {langkah.map((l, idx) => (
-                                <li
-                                  key={idx}
-                                  className="flex items-start gap-2 text-sm text-slate-700"
-                                >
-                                  <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-indigo-100 text-[10px] font-bold text-indigo-700">
-                                    {idx + 1}
-                                  </span>
-                                  <span>{l}</span>
-                                </li>
-                              ))}
-                            </ol>
                           </div>
                         </div>
                       </li>
