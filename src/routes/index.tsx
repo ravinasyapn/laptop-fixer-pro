@@ -480,7 +480,7 @@ function Index() {
                   2
                 </span>
                 <h3 className="text-sm font-semibold text-slate-800">
-                  Hasil Analisis & Solusi
+                  Hasil Analisis
                 </h3>
               </div>
               {hasil && hasil.length > 0 && (
@@ -516,10 +516,6 @@ function Index() {
               {hasil && hasil.length > 0 && (
                 <ul className="space-y-4">
                   {hasil.map((h, i) => {
-                    const langkah = h.solusi
-                      .split(/(?<=[.!?])\s+/)
-                      .map((s) => s.trim())
-                      .filter(Boolean);
                     const level =
                       h.keyakinan >= 80
                         ? { t: "Tinggi", text: "text-emerald-700", bar: "bg-emerald-500" }
